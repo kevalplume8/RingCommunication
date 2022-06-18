@@ -23,7 +23,7 @@ class DeviceDetailViewController: UIViewController {
         print("UUID \(peripheral.identifier.uuidString)")
         peripheral.delegate = self
         let cbuudid = CBUUID(string: peripheral.identifier.uuidString)
-        peripheral.discoverServices([cbuudid])
+        peripheral.discoverServices(nil)
     }
     
     @IBAction func reconnectButtonTapped( sender: Any) {
@@ -65,24 +65,26 @@ extension DeviceDetailViewController : CBPeripheralDelegate, CBCentralManagerDel
         guard let peripheralServices = peripheral.services, peripheralServices != nil else { return }
         print("🚀 Peripheral Services: \(peripheralServices)")
         for service in peripheralServices {
-            peripheral.discoverCharacteristics([CBUUID(string: peripheral.identifier.uuidString)], for: service)
+            peripheral.discoverCharacteristics(nil, for: service)
         }
     }
     
     // Once we get the required characteristics detail, we need to subscribe to it, which lets the peripheral know we want the data it contains
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+        print("🚀 didDiscoverCharacteristicsFor Called")
         if let error = error {
             print("Characteristics error: \(error)")
             return
         }
         guard let serviceCharacteristics = service.characteristics, serviceCharacteristics != nil else { return }
-        
+        print("🚀 serviceCharacteristics: \(serviceCharacteristics)")
         for characteristic in serviceCharacteristics {
             peripheral.setNotifyValue(true, for: characteristic)
         }
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+        print("🚀 didUpdateNotificationStateFor Called")
         if let error = error {
             print("Characteristics error: \(error)")
             return
@@ -94,12 +96,13 @@ extension DeviceDetailViewController : CBPeripheralDelegate, CBCentralManagerDel
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+        print("🚀 didUpdateValueFor Called")
         if let error = error {
             print("didUpdateValueFor error: \(error)")
         }
         
-        if characteristic != nil {
-            print("Characteristic \(characteristic)")
+        if characteristic.value != nil {
+            print("🍀 Characteristic Value\(characteristic.value?.description)")
         }
     }
     
